@@ -1,0 +1,4 @@
+[kubernetes]
+microk8s1.internal.priv
+microk8s2.internal.priv
+microk8s3.internal.priv

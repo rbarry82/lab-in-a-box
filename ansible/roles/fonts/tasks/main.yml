@@ -1,0 +1,11 @@
+---
+- name: Install Fonts
+  include_role:
+    name: hurricanehrndz.nerdfonts
+    apply:
+      become: yes
+  vars:
+    nerdfonts_users: "{{ ansible_user }}"
+    nerdfonts_fonts:
+      - fontname: 'FiraCode'
+  tags: [ 'never', 'desktop' ]

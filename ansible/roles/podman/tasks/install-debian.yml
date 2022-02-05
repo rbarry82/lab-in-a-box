@@ -1,0 +1,17 @@
+---
+- name: Enable podman repository
+  become: yes
+  shell: |
+    . /etc/os-release
+    sudo echo "deb https://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/stable/xUbuntu_${VERSION_ID}/ /" > /etc/apt/sources.list.d/devel:kubic:libcontainers:stable.list
+    curl -L "https://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/stable/xUbuntu_${VERSION_ID}/Release.key" | sudo apt-key add -
+
+- name: Install podman
+  package:
+    name:
+      - podman
+      - skopeo
+      - buildah
+    state: present
+    update_cache: yes
+  become: yes

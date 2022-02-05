@@ -1,0 +1,10 @@
+$TTL 60	; 1 minute
+@           IN SOA	microk8s.internal.priv. root.microk8s.internal.priv. (
+				45         ; serial
+				60         ; refresh (1 minute)
+				60         ; retry (1 minute)
+				60         ; expire (1 minute)
+				60         ; minimum (1 minute)
+				)
+			NS	ns.internal.priv.
+            IN  DNAME   microk8s.internal.priv.

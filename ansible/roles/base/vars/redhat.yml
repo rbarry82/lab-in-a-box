@@ -1,0 +1,4 @@
+dev_packages:
+  - "@Development Tools"
+repo_packages:
+  - yum-utils

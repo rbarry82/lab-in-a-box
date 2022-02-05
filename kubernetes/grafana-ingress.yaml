@@ -1,0 +1,40 @@
+apiVersion: traefik.containo.us/v1alpha1
+kind: IngressRoute
+metadata:
+  name: grafana-ingress-tls
+  namespace: monitoring
+  annotations:
+    kubernetes.io/ingress.class: traefik
+    traefik.ingress.kubernetes.io/router.entrypoints: web, websecure
+    traefik.frontend.redirect.entrypoint: https
+spec:
+  tls:
+    secretName: k8s-example-org-cert
+  entryPoints:
+    - web
+    - websecure
+  routes:
+    - match: Host(`grafana.k8s.example.org`)
+      kind: Rule
+      services:
+        - name: grafana
+          namespace: monitoring
+          port: 80
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: grafana-ingress
+  namespace: monitoring
+spec:
+  rules:
+  - host: grafana.k8s.internal.priv
+    http:
+      paths:
+      - backend:
+          service:
+            name: grafana
+            port:
+              number: 80
+        path: /
+        pathType: Prefix

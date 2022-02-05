@@ -1,0 +1,8 @@
+[push]
+	default = matching
+[color]
+	ui = 1
+[core]
+	excludesfile = ~/.gitignore
+[pull]
+	rebase = false

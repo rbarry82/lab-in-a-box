@@ -1,0 +1,13 @@
+$ORIGIN .
+$TTL 60	; 1 minute
+k8s.internal.priv	IN SOA	k8s.internal.priv. root.k8s.internal.priv. (
+				71         ; serial
+				60         ; refresh (1 minute)
+				60         ; retry (1 minute)
+				60         ; expire (1 minute)
+				60         ; minimum (1 minute)
+				)
+			NS	ns.k8s.internal.priv.
+$ORIGIN k8s.internal.priv.
+$TTL 60	; 1 minute
+ns			A	192.168.0.3

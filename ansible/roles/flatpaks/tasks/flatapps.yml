@@ -1,0 +1,9 @@
+---
+- name: Install everything
+  community.general.flatpak:
+    name:
+      com.discordapp.Discord
+      com.slack.Slack
+      com.spotify.Client
+      com.valvesoftware.Steam
+      com.valvesoftware.Steam.CompatibilityTool.Proton

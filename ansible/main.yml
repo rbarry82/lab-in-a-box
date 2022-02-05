@@ -1,0 +1,15 @@
+---
+
+# file: main.yml
+
+- hosts: all
+  gather_facts: True
+  roles:
+    - base
+    - docker
+    - libvirt
+    - podman
+    - snap
+    - fonts
+    - development
+    - shell

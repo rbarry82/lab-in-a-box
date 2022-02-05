@@ -1,0 +1,4 @@
+lang_packages:
+  - golang-go
+  - nodejs
+  - python3-venv

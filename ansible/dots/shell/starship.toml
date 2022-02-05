@@ -1,0 +1,47 @@
+format = """
+$username\
+$hostname\
+${custom.sysinfo} \
+$shlvl\
+$kubernetes\
+$directory\
+$git_branch\
+$git_commit\
+$git_state\
+$git_status\
+$hg_branch\
+$docker_context\
+$package\
+$dart\
+$golang\
+$helm\
+$kotlin\
+$nim\
+$ocaml\
+$perl\
+$python\
+$ruby\
+$rust\
+$swift\
+$vagrant\
+$conda\
+$memory_usage\
+$aws\
+$gcloud\
+$openstack\
+$env_var\
+$crystal\
+$custom\
+$cmd_duration\
+$line_break\
+$jobs\
+$battery\
+$time\
+$status\
+$character"""
+
+[custom.sysinfo]
+#command = "echo $USER(bold red) $(systemd-detect-virt) on $HOSTNAME(bold dimmed green)"
+command = 'echo -e "\u001b[31;1m${USER}\u001b[0m on $(systemd-detect-virt) \u001b[32;1m@${HOSTNAME}\u001b[0m "'
+format = "$output"
+when = """systemd-detect-virt"""

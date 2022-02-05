@@ -1,0 +1,8 @@
+dashboard:
+  insecure: true
+logging:
+  traefik: debug
+providers:
+  kubernetesIngress:
+    publishedService:
+      enabled: true

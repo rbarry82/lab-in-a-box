@@ -1,0 +1,13 @@
+---
+- name: Update packages
+  package:
+    name: "*"
+    state: latest
+  become: yes
+
+- name: Build up base distro
+  include: minimal_distro.yml
+
+- name: Performance Tweaks
+  include: system_tweaks.yml
+  tags: [ 'never', 'desktop' ]

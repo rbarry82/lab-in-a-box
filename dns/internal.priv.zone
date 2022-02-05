@@ -1,0 +1,17 @@
+$ORIGIN .
+$TTL 86400	; 1 day
+internal.priv		IN SOA	internal.priv. root.internal.priv. (
+				42917      ; serial
+				28800      ; refresh (8 hours)
+				7200       ; retry (2 hours)
+				604800     ; expire (1 week)
+				86400      ; minimum (1 day)
+				)
+			NS	ns.internal.priv.
+			A	192.168.0.3
+			TXT	"31454ab589ef9b3fd2041717fc5eba518c"
+$ORIGIN internal.priv.
+test        A	192.168.0.10
+foo			CNAME	test ; both of these are the same address. Add unlimited CNAMEs
+                         ; for a record, but don't have multiple A records for the
+                         ; same IP

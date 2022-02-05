@@ -1,0 +1,10 @@
+---
+roles:
+- name: hurricanehrndz.nerdfonts
+- name: geerlingguy.nodejs
+- name: geerlingguy.docker
+- name: robertdebock.epel
+- name: robertdebock.rpmfusion
+
+collections:
+  - name: community.general

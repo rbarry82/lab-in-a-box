@@ -1,0 +1,85 @@
+---
+- name: Set distribution family dependent variables
+  include_vars: "{{ ansible_os_family | lower }}.yml"
+
+- name: Set distribution dependent variables
+  include_vars: "{{ ansible_distribution | lower }}.yml"
+
+- name: Install any missing base packages
+  package:
+    state: present
+    name: "{{ base_packages }}"
+  become: yes
+
+- name: Change journald retention to 2 days
+  lineinfile:
+    path: /etc/systemd/journald.conf
+    state: present
+    regexp: "^#?MaxRetentionSec=.*"
+    line: "MaxRetentionSec=2day"
+  become: yes
+
+- name: Restart journald
+  service:
+    name: systemd-journald
+    state: restarted
+  become: yes
+
+- name: Enable rpmfusion
+  include_role:
+    name: robertdebock.rpmfusion
+    apply:
+      become: yes
+  when: ansible_distribution == 'Fedora'
+
+- name: Enable EPEL
+  include_role:
+    name: robertdebock.epel
+    apply:
+      become: yes
+  when: ansible_distribution in ['CentOS', 'RedHat', "OracleLinux"]
+
+- name: Enable powertools
+  community.general.ini_file:
+    path: /etc/yum.repos.d/CentOS-Linux-PowerTools.repo
+    section: powertools
+    option: enabled
+    value: "1"
+    mode: "0644"
+  when:
+    - ansible_distribution in [ "Rocky", "CentOS" ]
+    - ansible_distribution_major_version >= "8"
+  become: yes
+
+- name: Enable CodeReady Builder
+  shell: subscription-manager repos --enable codeready-builder-for-rhel-8-x86_64-rpms
+  when:
+    - ansible_distribution in [ "RedHat" ]
+    - ansible_distribution_major_version >= "8"
+  become: yes
+
+- name: Enable CodeReady Builder
+  shell: dnf config-manager --set-enabled ol8_codeready_builder
+  when:
+    - ansible_distribution in ["OracleLinux" ]
+    - ansible_distribution_major_version >= "8"
+  become: yes
+
+- name: Install Repo Management Utilities
+  package:
+    state: present
+    name: "{{ repo_packages }}"
+  become: yes
+
+- name: Install Development Utilities
+  package:
+    state: present
+    name: "{{ dev_packages }}"
+  become: yes
+
+- name: Install Programs (Media Utilities)
+  package:
+    state: present
+    name: "{{ codecs_packages }}"
+  become: yes
+  tags: [ 'never', 'desktop' ]

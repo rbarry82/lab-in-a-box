@@ -1,0 +1,6 @@
+---
+# vars file
+#
+desktop_packages:
+  - tmux
+  - alacritty

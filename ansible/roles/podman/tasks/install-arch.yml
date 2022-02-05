@@ -1,0 +1,10 @@
+---
+- name: Install Podman
+  become: yes
+  package:
+    name:
+      - podman
+      - skopeo
+      - buildah
+    state: present
+    update_cache: yes

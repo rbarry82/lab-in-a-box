@@ -1,0 +1,18 @@
+---
+- name: Install communication tools
+  community.general.snap:
+    name: 
+      - mattermost-desktop
+      - whatsdesk
+
+- name: Install lxd
+  community.general.snap:
+    name: lxd
+    classic: yes
+
+- name: "Adding user to lxd group"
+  become: true
+  user:
+    name: "{{ ansible_user }}"
+    group: lxd
+    append: yes

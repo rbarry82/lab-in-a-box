@@ -1,0 +1,41 @@
+apiVersion: traefik.containo.us/v1alpha1
+kind: IngressRoute
+metadata:
+  name: loki-ingress-tls
+  namespace: monitoring
+  annotations:
+    kubernetes.io/ingress.class: traefik
+    cert-manager.io/cluster-issuer: example-issuer
+    traefik.ingress.kubernetes.io/router.entrypoints: web, websecure
+    traefik.frontend.redirect.entrypoint: https
+spec:
+  tls:
+    secretName: k8s-example-org-cert
+  entryPoints:
+    - web
+    - websecure
+  routes:
+    - match: Host(`loki.k8s.example.org`)
+      kind: Rule
+      services:
+        - name: loki
+          namespace: monitoring
+          port: 3100
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: loki-ingress
+  namespace: monitoring
+spec:
+  rules:
+  - host: loki.k8s.internal.priv
+    http:
+      paths:
+      - backend:
+          service:
+            name: loki
+            port:
+              number: 3100
+        path: /
+        pathType: Prefix

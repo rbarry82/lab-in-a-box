@@ -1,0 +1,46 @@
+---
+- name: Enable copr
+  community.general.copr:
+    name: agriffis/neovim-nightly
+  become: yes
+  when: ansible_distribution == 'Fedora'
+
+- name: Enable PPA
+  apt_repository:
+    repo: ppa:neovim-ppa/unstable
+  become: yes
+  when: ansible_distribution == 'Ubuntu'
+
+- name: Install nvim
+  become: yes
+  package:
+    name: neovim
+    state: present
+  when: ansible_distribution == 'Ubuntu' or ansible_distribution == 'Fedora'
+
+- name: Compile and install nvim
+  block:
+    - name: Git checkout
+      ansible.builtin.git:
+        repo: https://github.com/neovim/neovim.git
+        dest: /tmp/neovim
+    - name: Install build dependencies
+      become: yes
+      package:
+        name:
+          - ninja-build
+          - libtool
+          - autoconf
+          - automake
+          - cmake
+          - gcc
+          - "{{ 'g++' if ansible_os_family == 'Debian' else 'gcc-c++' }}"
+          - make
+          - pkgconfig
+          - patch
+          - gettext
+        state: present
+    - name: Build and install
+      become: yes
+      shell: cd /tmp/neovim && make CMAKE_BUILD_TYPE=Release -j4 && make install
+  when: ansible_distribution in ['CentOS', 'RedHat', 'OracleLinux']

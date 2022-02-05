@@ -1,0 +1,12 @@
+---
+- name: Enable flathub
+  community.general.flatpak_remote:
+    name: flathub
+    state: present
+    flatpakrepo_url: https://dl.flathub.org/repo/flathub.flatpakrepo
+  become: yes
+  tags: [ 'never', 'desktop' ]
+
+- name: Install flatpaks
+  include: flatapps.yml
+  tags: [ 'never', 'desktop' ]

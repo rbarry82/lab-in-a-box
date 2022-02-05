@@ -1,0 +1,44 @@
+---
+- name: Create user account if it does not exist
+  hosts: all
+  remote_user: root
+
+  tasks:
+  - name: Create a group for each user
+    ansible.builtin.group:
+      name: "{{ item }}"
+    loop:
+      - youruser
+  - name: Create personal user account
+    user:
+      name: "{{ item }}"
+      password: "SET A HASH!"
+      shell: /usr/bin/bash
+      groups: "{{ item }},{{ 'sudo' if ansible_os_family == 'Debian' else 'wheel' }}"
+      append: yes
+      uid: 1000
+      skeleton: "/etc/skel"
+      state: present
+      generate_ssh_key: yes
+      ssh_key_bits: 2048
+      ssh_key_file: .ssh/id_rsa
+    loop:
+      - youruser
+
+  - name: Add remote authorized key
+    authorized_key:
+      user: "{{ item }}"
+      key: "{{ lookup('file', '~/.ssh/id_rsa.pub') }}"
+    loop:
+      - youruser
+
+  # Add all users defined in local_user (group_vars/all.yml) to sudo administration group
+  - name: Add user to sudoers
+    lineinfile:
+      path: /etc/sudoers
+      regexp: "{{ item }} ALL"
+      line: "{{ item }} ALL=(ALL) NOPASSWD: ALL"
+      state: present
+      validate: "/usr/sbin/visudo -cf %s"
+    loop:
+      - youruser

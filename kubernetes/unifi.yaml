@@ -1,0 +1,185 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: unifi
+  namespace: unifi
+spec:
+  storageClassName: longhorn
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 8Gi
+---
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  name: unifi-controller
+  namespace: unifi
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      name: unifi-controller
+  template:
+    metadata:
+      name: unifi-controller
+      labels:
+        name: unifi-controller
+    spec:
+      volumes:
+        - name: unifi
+          persistentVolumeClaim:
+            claimName: unifi
+      containers:
+        - name: unifi-controller
+          image: 'jacobalberty/unifi:v6.5.54'
+          ports:
+            - containerPort: 3478
+              protocol: UDP
+            - containerPort: 10001
+              protocol: UDP
+            - containerPort: 8080
+              protocol: TCP
+            - containerPort: 8443
+              protocol: TCP
+            - containerPort: 8843
+              protocol: TCP
+            - containerPort: 8880
+              protocol: TCP
+            - containerPort: 6789
+              protocol: TCP
+          volumeMounts:
+            - name: unifi
+              mountPath: /unifi
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: lb-unifi-tcp
+  namespace: unifi
+  annotations:
+    metallb.universe.tf/allow-shared-ip: 'true'
+    external-dns.alpha.kubernetes.io/hostname: unifi.k8s.internal.priv
+spec:
+  type: LoadBalancer
+  loadBalancerIP: 192.168.2.20
+  ports:
+    - name: 'unifi-inform'
+      protocol: TCP
+      port: 8080
+      targetPort: 8080
+    - name: '8443'
+      protocol: TCP
+      port: 8443
+      targetPort: 8443
+    - name: 'unifi-https'
+      protocol: TCP
+      port: 8843
+      targetPort: 8843
+    - name: '8880'
+      protocol: TCP
+      port: 8880
+      targetPort: 8880
+    - name: '6789'
+      protocol: TCP
+      port: 6789
+      targetPort: 6789
+  selector:
+    name: unifi-controller
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: lb-unifi-udp
+  namespace: unifi
+  annotations:
+    metallb.universe.tf/allow-shared-ip: 'true'
+spec:
+  type: LoadBalancer
+  loadBalancerIP: 192.168.2.20
+  ports:
+    - name: 'stun'
+      protocol: UDP
+      port: 3478
+      targetPort: 3478
+    - name: 'unifi-discovery'
+      protocol: UDP
+      port: 10001
+      targetPort: 10001
+  selector:
+    name: unifi-controller
+---
+apiVersion: v1
+kind: Service
+metadata:
+  annotations:
+    metallb.universe.tf/allow-shared-ip: 'true'
+  labels:
+    app.kubernetes.io/instance: unifi-traefik
+    app.kubernetes.io/name: unifi-traefik
+  name: unifi-traefik
+  namespace: traefik
+spec:
+  externalTrafficPolicy: Cluster
+  internalTrafficPolicy: Cluster
+  ipFamilies:
+  - IPv4
+  ipFamilyPolicy: SingleStack
+  ports:
+  - name: websecure
+    port: 443
+    protocol: TCP
+    targetPort: websecure
+  selector:
+    app.kubernetes.io/instance: traefik
+    app.kubernetes.io/name: traefik
+  sessionAffinity: None
+  type: LoadBalancer
+  loadBalancerIP: 192.168.2.20
+---
+apiVersion: traefik.containo.us/v1alpha1
+kind: IngressRoute
+metadata:
+  name: unifi-ingress-tls
+  namespace: unifi
+  annotations:
+    kubernetes.io/ingress.class: traefik
+    traefik.ingress.kubernetes.io/router.entrypoints: websecure
+    traefik.frontend.redirect.entrypoint: https
+spec:
+  tls:
+    secretName: k8s-example-org-cert
+  entryPoints:
+    - websecure
+  routes:
+    - match: Host(`unifi.k8s.example.org`)
+      kind: Rule
+      services:
+        - name: lb-unifi-tcp
+          namespace: unifi
+          port: 8443
+          scheme: https
+          passHostHeader: true
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: unifi-ingress
+  namespace: unifi
+  annotations:
+    ingress.kubernetes.io/protocol: https
+    traefik.ingress.kubernetes.io/frontend-entry-points: https
+    external-dns.alpha.kubernetes.io/exclude: "true"
+spec:
+  rules:
+  - host: unifi.k8s.internal.priv
+    http:
+      paths:
+      - backend:
+          service:
+            name: lb-unifi-tcp
+            port:
+              number: 8443
+        path: /
+        pathType: Prefix

@@ -1,0 +1,17 @@
+$ORIGIN .
+$TTL 86400	; 1 day
+0.168.192.in-addr.arpa	IN SOA	ns.internal.priv. hostmaster.internal.priv.0.168.192.in-addr.arpa. (
+				32307      ; serial
+				28800      ; refresh (8 hours)
+				7200       ; retry (2 hours)
+				604800     ; expire (1 week)
+				86400      ; minimum (1 day)
+				)
+			NS	ns.internal.priv.
+$ORIGIN 0.168.192.in-addr.arpa.
+1			PTR	gateway.internal.priv.
+$TTL 3600	; 1 hour
+10			PTR	test.internal.priv. ; I'm an example to show you how reverse DNS works!
+                                    ; dhcpd will do this automatically, but if it's your own
+                                    ; reservation, you need this for kerberos to work if youo
+                                    ; want it

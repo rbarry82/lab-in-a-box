@@ -1,0 +1,49 @@
+---
+- name: Set distribution family dependent variables
+  include_vars: "{{ ansible_os_family | lower }}.yml"
+
+- name: Enable source
+  include_role:
+    name: geerlingguy.nodejs
+    apply:
+      become: yes
+  vars:
+    nodejs_version: "17.x"
+  when: ansible_distribution != 'Fedora'
+
+- name: Enable golang-backports PPA
+  block:
+    - name: Install PPA dependencies
+      apt:
+        name:
+          - ca-certificates
+          - gnupg
+          - software-properties-common
+          - apt-transport-https
+        update_cache: true
+      become: yes
+    - name: Enable golang-backports
+      apt_repository:
+        repo: ppa:longsleep/golang-backports
+      become: yes
+  when: ansible_os_family == "Debian"
+
+- name: Install yarn
+  community.general.npm:
+    name: yarn
+    global: yes
+  become: yes
+
+- name: Install development languages
+  package:
+    state: present
+    name: "{{ lang_packages }}"
+  become: yes
+
+- name: Install desktop development packages
+  package:
+    state: present
+    name: "{{ desktop_packages }}"
+  become: yes
+  tags: [ 'never', 'desktop' ]
+

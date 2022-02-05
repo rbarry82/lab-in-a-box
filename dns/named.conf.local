@@ -1,0 +1,54 @@
+include "/etc/rndc.key";
+include "/etc/external-dns.key";
+
+zone "internal.priv" {
+	type master;
+	allow-update { key "rndc-key";};
+	file "/var/named/internal.priv.zone";
+};
+
+zone "0.168.192.in-addr.arpa" {
+	type master;
+	allow-update { key "rndc-key";};
+	file "/var/named/0.168.192.in-addr.arpa.zone";
+};
+
+zone "os.internal.priv" {
+	type forward;
+	forward only;
+	forwarders { 192.168.0.5 port 5354; }; // you don't have to use this, but if you have openstack or another forwarder. Mosly here to demo doing it on a strange port, like from a container
+};
+
+zone "k8s.internal.priv" {
+	type master;
+	allow-transfer { key "external-dns";};
+	update-policy { grant external-dns zonesub ANY;};
+	file "/var/named/k8s.zone";
+};
+
+zone "microk8s.internal.priv" {
+	type master;
+	allow-transfer { key "external-dns";};
+	update-policy { grant external-dns zonesub ANY;};
+	file "/var/named/microk8s.zone";
+};
+
+zone "home.example.org" {
+	type master;
+	file "/var/named/example-home.zone";
+};
+
+zone "os.example.org" {
+	type master;
+	file "/var/named/example-os.zone";
+};
+
+zone "k8s.example.org" {
+	type master;
+	file "/var/named/example-k8s.zone";
+};
+
+zone "microk8s.example.org" {
+	type master;
+	file "/var/named/example-microk8s.zone";
+};
